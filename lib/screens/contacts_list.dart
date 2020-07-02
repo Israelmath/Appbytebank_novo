@@ -1,3 +1,4 @@
+import 'package:bytebank_novo/dao/contacts_dao.dart';
 import 'package:bytebank_novo/database/app_database.dart';
 import 'package:bytebank_novo/models/contact.dart';
 import 'package:flutter/cupertino.dart';
@@ -5,7 +6,17 @@ import 'package:flutter/material.dart';
 
 import 'contact_form.dart';
 
-class ContactsList extends StatelessWidget {
+
+
+class ContactsList extends StatefulWidget {
+
+  @override
+  _ContactsListState createState() => _ContactsListState();
+}
+
+class _ContactsListState extends State<ContactsList> {
+  final ContactDAO _dao = ContactDAO();
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -14,7 +25,7 @@ class ContactsList extends StatelessWidget {
       ),
       body: FutureBuilder<List<Contact>>(
         initialData: List(),
-        future: findAll(),
+        future: _dao.findAll(),
         builder: (context, snapshot) {
           switch (snapshot.connectionState) {
             case ConnectionState.none:
@@ -41,7 +52,6 @@ class ContactsList extends StatelessWidget {
               break;
             case ConnectionState.done:
               final List<Contact> listaContatos = snapshot.data;
-              debugPrint('Contatos: $listaContatos,\nlength: ${listaContatos.length}');
               return ListView.builder(
                 itemBuilder: (context, index) {
                   final Contact contact = listaContatos[index];
@@ -57,8 +67,7 @@ class ContactsList extends StatelessWidget {
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           Navigator.of(context)
-              .push(MaterialPageRoute(builder: (context) => ContactForm()))
-              .then((newcontact) => debugPrint(newcontact.toString()));
+              .push(MaterialPageRoute(builder: (context) => ContactForm()));
         },
         child: Icon(
           Icons.add,
