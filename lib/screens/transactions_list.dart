@@ -1,6 +1,6 @@
 import 'package:bytebank_novo/http/webclients/transaction_webclient.dart';
-import 'package:bytebank_novo/models/centered_message.dart';
-import 'package:bytebank_novo/models/progress.dart';
+import 'package:bytebank_novo/components/centered_message.dart';
+import 'package:bytebank_novo/components/progress.dart';
 import 'package:bytebank_novo/models/transaction.dart';
 import 'package:flutter/material.dart';
 

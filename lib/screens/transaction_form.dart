@@ -1,3 +1,5 @@
+import 'package:bytebank_novo/components/response_dialog.dart';
+import 'package:bytebank_novo/components/transaction_auth_dialog.dart';
 import 'package:bytebank_novo/http/webclients/transaction_webclient.dart';
 import 'package:bytebank_novo/models/contact.dart';
 import 'package:bytebank_novo/models/transaction.dart';
@@ -60,13 +62,19 @@ class _TransactionFormState extends State<TransactionForm> {
                   child: RaisedButton(
                     child: Text('Transferir'),
                     onPressed: () {
-                      final double valor = double.tryParse(_valueControler.text);
-                      final transactionCreated = Transaction(valor, widget.contact);
-                      _webClient.save(transactionCreated).then((transactionDone){
-                        if (transactionDone != null){
-                          Navigator.pop(context);
-                        }
-                      });
+                      final double valor =
+                          double.tryParse(_valueControler.text);
+                      final transactionCreated =
+                          Transaction(valor, widget.contact);
+                      showDialog(
+                          context: context,
+                          builder: (contextDialog) {
+                            return TransactionAuthDialog(
+                              onConfirm: (String password) {
+                                _save(transactionCreated, password, context);
+                              },
+                            );
+                          });
                     },
                   ),
                 ),
@@ -76,5 +84,22 @@ class _TransactionFormState extends State<TransactionForm> {
         ),
       ),
     );
+  }
+
+  void _save(Transaction transactionCreated, String password, BuildContext context) {
+    _webClient
+        .save(transactionCreated, password)
+        .then((transactionDone) {
+      if (transactionDone != null) {
+        showDialog(context: context, builder: (contextDialog){
+          return SuccessDialog('Transação concluída');
+        }).then((value) {Navigator.pop(context);});
+      }
+    }).catchError((exception){
+      showDialog(context: context, builder: (contextDialog){
+        return FailureDialog(exception.message);
+      });
+    },
+        test: (exception)=> exception is Exception);
   }
 }
