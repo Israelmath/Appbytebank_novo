@@ -18,7 +18,7 @@ Future<Database> getDatabase() async {
 //        db.execute('CREATE TABLE contacts ('
 //            'id INTEGER,'
 //            'name VARCHAR(100),'
-//            'account_number INTEGER)');
+//            'accountNumber INTEGER)');
 //      }, version: 1,
 ////      onDowngrade: onDatabaseDowngradeDelete
 //      );

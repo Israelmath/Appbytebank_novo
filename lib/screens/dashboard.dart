@@ -1,4 +1,5 @@
 import 'package:bytebank_novo/screens/contacts_list.dart';
+import 'package:bytebank_novo/screens/transactions_list.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
@@ -25,19 +26,12 @@ class Dashboard extends StatelessWidget {
                 _FeatureItem(
                   name: 'Transfer',
                   icone: Icons.monetization_on,
-                  onClick: () {
-                    _showContactsList(context);
-                    },
+                  onClick: () => _showContactsList(context),
                 ),
                 _FeatureItem(
                   name: 'Transaction Feed',
                   icone: Icons.description,
-                  onClick: () => print('Cliclou no transaction'),
-                ),
-                _FeatureItem(
-                  name: 'Transaction Feed',
-                  icone: Icons.description,
-                  onClick: () => print('Cliclou no transaction'),
+                  onClick: () => _showTransactionsList(context),
                 ),
               ],
             ),
@@ -51,6 +45,14 @@ class Dashboard extends StatelessWidget {
     Navigator.of(context).push(
       MaterialPageRoute(
         builder: (context) => ContactsList(),
+      ),
+    );
+  }
+
+  _showTransactionsList(BuildContext context) {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => TransactionsList(),
       ),
     );
   }
