@@ -1,9 +1,14 @@
+import 'dart:async';
+import 'dart:io';
+
+import 'package:bytebank_novo/components/progress.dart';
 import 'package:bytebank_novo/components/response_dialog.dart';
 import 'package:bytebank_novo/components/transaction_auth_dialog.dart';
 import 'package:bytebank_novo/http/webclients/transaction_webclient.dart';
 import 'package:bytebank_novo/models/contact.dart';
 import 'package:bytebank_novo/models/transaction.dart';
 import 'package:flutter/material.dart';
+import 'package:uuid/uuid.dart';
 
 class TransactionForm extends StatefulWidget {
   final Contact contact;
@@ -17,9 +22,13 @@ class TransactionForm extends StatefulWidget {
 class _TransactionFormState extends State<TransactionForm> {
   final TextEditingController _valueControler = TextEditingController();
   final TransactionWebClient _webClient = TransactionWebClient();
+  final String transactionId = Uuid().v4();
+
+  bool _sending = false;
 
   @override
   Widget build(BuildContext context) {
+    print('Transaction form Id: $transactionId');
     return Scaffold(
       appBar: AppBar(
         title: Text('Nova transação'),
@@ -30,6 +39,12 @@ class _TransactionFormState extends State<TransactionForm> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
+              Visibility(
+                visible: _sending,
+                child: Progress(
+                  message: 'Enviando...',
+                ),
+              ),
               Text(
                 widget.contact.nome,
                 style: TextStyle(
@@ -65,7 +80,7 @@ class _TransactionFormState extends State<TransactionForm> {
                       final double valor =
                           double.tryParse(_valueControler.text);
                       final transactionCreated =
-                          Transaction(valor, widget.contact);
+                          Transaction(transactionId, valor, widget.contact);
                       showDialog(
                           context: context,
                           builder: (contextDialog) {
@@ -86,20 +101,58 @@ class _TransactionFormState extends State<TransactionForm> {
     );
   }
 
-  void _save(Transaction transactionCreated, String password, BuildContext context) {
-    _webClient
+  void _save(Transaction transactionCreated, String password,
+      BuildContext context) async {
+    setState(() {
+      _sending = true;
+    });
+
+    final Transaction transaction = await _webClient
         .save(transactionCreated, password)
-        .then((transactionDone) {
-      if (transactionDone != null) {
-        showDialog(context: context, builder: (contextDialog){
-          return SuccessDialog('Transação concluída');
-        }).then((value) {Navigator.pop(context);});
-      }
-    }).catchError((exception){
-      showDialog(context: context, builder: (contextDialog){
-        return FailureDialog(exception.message);
-      });
-    },
-        test: (exception)=> exception is Exception);
+        .catchError((exception) {
+      _throwHttpError(context, exception);
+    }, test: (exception) => exception is HttpException).catchError((exception) {
+      _showTimeoutError(context);
+    }, test: (exception) => exception is TimeoutException).catchError(
+            (exception) {
+      _showError(context);
+    });
+
+    setState(() {
+      _sending = false;
+    });
+
+    if (transaction != null) {
+      await showDialog(
+          context: context,
+          builder: (contextDialog) {
+            return SuccessDialog('Transação concluída');
+          });
+      Navigator.pop(context);
+    }
+  }
+
+  void _showError(BuildContext context) {
+    showDialog(
+        context: context,
+        builder: (contextDialog) {
+          return FailureDialog('Uknown error');
+        });
+  }
+
+  void _showTimeoutError(BuildContext context) {
+    showDialog(
+        context: context,
+        builder: (contextDialog) {
+          return FailureDialog('Timeout Exception');
+        });
+  }
+
+  void _throwHttpError(BuildContext context, exception) {
+    showDialog(
+        context: context,
+        builder: (contextDialog) {
+          return FailureDialog(exception.message);
+        });
   }
 }

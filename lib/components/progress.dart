@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 
 class Progress extends StatelessWidget {
+  final String message;
+
+  Progress({this.message = 'Loading'});
+
   @override
   Widget build(BuildContext context) {
     return Center(
@@ -12,7 +16,7 @@ class Progress extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.only(top: 8.0),
             child: Text(
-              'Loading',
+              message,
               style: TextStyle(fontSize: 16.0),
             ),
           ),
